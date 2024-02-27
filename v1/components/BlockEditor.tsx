@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react"
-import { contentItemMethods, useAgilityAppSDK, setHeight, getManagementAPIToken, useResizeHeight } from "@agility/app-sdk"
+import {
+	contentItemMethods,
+	useAgilityAppSDK,
+	setHeight,
+	getManagementAPIToken,
+	useResizeHeight
+} from "@agility/app-sdk"
 import useOnScreen from "../hooks/useOnScreen"
 
 import EditorJS, { OutputData } from "@editorjs/editorjs"
@@ -26,7 +32,7 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 	const blockRef = useRef<HTMLIFrameElement>(null)
 	const savedValue = useRef<string | null>(null)
 
-	useResizeHeight({ref: containerRef})
+	useResizeHeight({ ref: containerRef })
 
 	const isVisible = useOnScreen(containerRef)
 
@@ -51,7 +57,6 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 		try {
 			const blocks = JSON.parse(fieldValue) as OutputData
 			if (fieldValue !== savedValue.current) {
-	
 				if (!fieldValue || blocks.blocks.length == 0) {
 					editor.current.clear()
 				} else {
@@ -69,7 +74,7 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 		if (fieldValue && editor.current) {
 			try {
 				const blocks = JSON.parse(fieldValue) as OutputData
-	
+
 				if (blocks.blocks.length == 0) {
 					editor.current.clear()
 				} else {
@@ -80,8 +85,6 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 			}
 		}
 	}, [editor.current, fieldValue])
-
-
 
 	useEffect(() => {
 		//initialize the editor
@@ -129,7 +132,7 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 				marker: Marker,
 				delimiter: Delimiter,
 				inlineCode: InlineCode,
-				embed: Embed,
+				embed: Embed
 			},
 			onChange: (e: any) => {
 				editorJS.save().then((v) => {
@@ -167,8 +170,8 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 	}, [blockRef, initializing, token])
 
 	return (
-		<div className="bg-white" ref={containerRef} id="container-element">
-			<div className="mx-20 prose min-h-[400px] pb-14 pt-2" id="editor-elem" ref={blockRef}></div>
+		<div className="" ref={containerRef} id="container-element">
+			<div className="prose mx-20 min-h-[400px] pb-14 pt-2" id="editor-elem" ref={blockRef}></div>
 		</div>
 	)
 }

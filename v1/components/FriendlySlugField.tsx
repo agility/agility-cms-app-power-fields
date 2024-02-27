@@ -1,6 +1,6 @@
 import { useAgilityAppSDK, contentItemMethods, setHeight, openAlertModal } from "@agility/app-sdk"
-import { TextInput, Button, TextInputAddon } from "@agility/plenum-ui"
-import { IconName } from "@agility/plenum-ui/lib/util/DynamicIcons"
+import { TextInput, Button, FormInputWithAddons } from "@agility/plenum-ui"
+import "@agility/plenum-ui/dist/tailwind.css"
 import { useEffect, useState } from "react"
 
 const makeFriendlyStr = (s: string): string => {
@@ -75,12 +75,12 @@ const FriendlyURLField = () => {
 	return (
 		<div className="flex flex-row items-center justify-between gap-1">
 			<div className="w-full p-1 ">
-				<TextInputAddon
+				<FormInputWithAddons
 					type="text"
 					value={fieldValue}
-					trailIcon={hasBeenSaved ? "RefreshIcon" : undefined}
+					trailIcon={hasBeenSaved ? "IconRefresh" : undefined}
 					trailLabel={hasBeenSaved ? (width > 400 ? "Re-Generate Slug" : undefined) : undefined}
-					onChange={(str) => {
+					onChange={(str: string) => {
 						regenerateSlug(str)
 					}}
 					onCtaClick={() => {

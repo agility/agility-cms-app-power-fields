@@ -1,4 +1,4 @@
-import { useAgilityAppSDK, contentItemMethods,  useResizeHeight } from "@agility/app-sdk"
+import { useAgilityAppSDK, contentItemMethods, useResizeHeight } from "@agility/app-sdk"
 import React, { useState, useEffect, useRef, useMemo } from "react"
 import useOnScreen from "../hooks/useOnScreen"
 import SimpleMDE from "react-simplemde-editor"
@@ -33,7 +33,7 @@ const MarkdownEditor = () => {
 	}, [isVisible])
 
 	return (
-		<div ref={containerRef} className="min-h-[400px] bg-white">
+		<div ref={containerRef} className="min-h-[400px] ">
 			<SimpleMDE id="simple-mde" value={markdownValues} onChange={onChange} />
 		</div>
 	)
