@@ -1,7 +1,6 @@
-import { useAgilityAppSDK, contentItemMethods, setHeight, openAlertModal } from "@agility/app-sdk"
-import { TextInput, Button, TextInputAddon } from "@agility/plenum-ui"
-import { IconName } from "@agility/plenum-ui/lib/util/DynamicIcons"
-import { useEffect, useState } from "react"
+import { useAgilityAppSDK, contentItemMethods, setHeight, openAlertModal, useResizeHeight } from "@agility/app-sdk"
+import { FormInputWithAddons } from "@agility/plenum-ui"
+import { useEffect, useRef, useState } from "react"
 
 const makeFriendlyStr = (s: string): string => {
 	if (!s) return ""
@@ -29,8 +28,12 @@ const makeFriendlyStr = (s: string): string => {
 
 const FriendlyURLField = () => {
 	const { contentItem, field, fieldValue } = useAgilityAppSDK()
-
+	console.log(contentItem, "contentItem")
+	console.log(field, "field")
+	console.log(fieldValue, "fieldValue")
 	const [currentTitle, setCurrentTitle] = useState<string>("")
+	const containerRef = useRef<HTMLIFrameElement | null>(null)
+	useResizeHeight({ ref: containerRef })
 
 	const regenerateSlug = async (title: string) => {
 		const newVal = makeFriendlyStr(title)
@@ -55,9 +58,7 @@ const FriendlyURLField = () => {
 		})
 	}, [])
 
-	useEffect(() => {
-		setHeight({ height: 50 })
-	}, [])
+	// useEffect(() => {}, [])
 
 	const hasBeenSaved = !!!(contentItem && contentItem?.contentID < 0)
 	const [width, setWidth] = useState<number>(document.body.clientWidth)
@@ -73,29 +74,37 @@ const FriendlyURLField = () => {
 	}, [])
 
 	return (
-		<div className="flex flex-row items-center justify-between gap-1">
+		<div ref={containerRef} className="flex flex-row items-center justify-between gap-1">
 			<div className="w-full p-1 ">
-				<TextInputAddon
+				<FormInputWithAddons
 					type="text"
 					value={fieldValue}
 					trailIcon={hasBeenSaved ? "RefreshIcon" : undefined}
 					trailLabel={hasBeenSaved ? (width > 400 ? "Re-Generate Slug" : undefined) : undefined}
-					onChange={(str) => {
+					handleChange={(str: string) => {
 						regenerateSlug(str)
 					}}
-					onCtaClick={() => {
-						openAlertModal({
-							title: "Re-Generate Slug",
-							message:
-								"By changing the URL you could create broken links. We recommend you add in a URL redirection from the old URL to the new URL. Are you sure you wish to continue?",
-							okButtonText: "Re-Generate",
-							cancelButtonText: "Cancel",
-							iconName: "QuestionMarkCircleIcon",
-							callback: (ok: boolean) => {
-								if (!ok) return
-								regenerateSlug(currentTitle)
-							}
-						})
+					addonOffset={8}
+					addonBTN={{
+						onClick: () => {
+							openAlertModal({
+								title: "Re-Generate Slug",
+								message:
+									"By changing the URL you could create broken links. We recommend you add in a URL redirection from the old URL to the new URL. Are you sure you wish to continue?",
+								okButtonText: "Re-Generate",
+								cancelButtonText: "Cancel",
+								iconName: "QuestionMarkCircleIcon",
+								callback: (ok: boolean) => {
+									if (!ok) return
+									regenerateSlug(currentTitle)
+								}
+							})
+						},
+						ctaLabel: hasBeenSaved ? (width > 400 ? "Re-Generate Slug" : undefined) : undefined,
+						icon: {
+							icon: hasBeenSaved ? "RefreshIcon" : undefined,
+							className: "h-5 w-5 text-gray-400"
+						}
 					}}
 				/>
 			</div>

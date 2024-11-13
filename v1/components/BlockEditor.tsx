@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react"
-import { contentItemMethods, useAgilityAppSDK, setHeight, getManagementAPIToken, useResizeHeight } from "@agility/app-sdk"
+import {
+	contentItemMethods,
+	useAgilityAppSDK,
+	setHeight,
+	getManagementAPIToken,
+	useResizeHeight
+} from "@agility/app-sdk"
 import useOnScreen from "../hooks/useOnScreen"
 
 import EditorJS, { OutputData } from "@editorjs/editorjs"
@@ -21,12 +27,12 @@ import { useCallback } from "react"
 
 const BlockEditor = ({ configuration }: { configuration: any }) => {
 	const { initializing, instance, fieldValue } = useAgilityAppSDK()
-
+	const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 })
 	const containerRef = useRef<HTMLIFrameElement>(null)
 	const blockRef = useRef<HTMLIFrameElement>(null)
 	const savedValue = useRef<string | null>(null)
 
-	useResizeHeight({ref: containerRef})
+	useResizeHeight({ ref: containerRef })
 
 	const isVisible = useOnScreen(containerRef)
 
@@ -36,10 +42,11 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 
 	// Get the ManagementAPIToken
 	useEffect(() => {
-		;(async () => {
+		const getToken = async () => {
 			const token = await getManagementAPIToken()
 			setToken(token)
-		})()
+		}
+		getToken()
 	}, [])
 
 	useEffect(() => {
@@ -51,7 +58,6 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 		try {
 			const blocks = JSON.parse(fieldValue) as OutputData
 			if (fieldValue !== savedValue.current) {
-	
 				if (!fieldValue || blocks.blocks.length == 0) {
 					editor.current.clear()
 				} else {
@@ -69,7 +75,7 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 		if (fieldValue && editor.current) {
 			try {
 				const blocks = JSON.parse(fieldValue) as OutputData
-	
+
 				if (blocks.blocks.length == 0) {
 					editor.current.clear()
 				} else {
@@ -80,8 +86,6 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 			}
 		}
 	}, [editor.current, fieldValue])
-
-
 
 	useEffect(() => {
 		//initialize the editor
@@ -129,7 +133,7 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 				marker: Marker,
 				delimiter: Delimiter,
 				inlineCode: InlineCode,
-				embed: Embed,
+				embed: Embed
 			},
 			onChange: (e: any) => {
 				editorJS.save().then((v) => {
@@ -166,9 +170,40 @@ const BlockEditor = ({ configuration }: { configuration: any }) => {
 		editor.current = editorJS
 	}, [blockRef, initializing, token])
 
+	// Resize the editor when the container resizes
+	useEffect(() => {
+		if (!blockRef.current || !containerRef.current) return
+
+		const observer = new ResizeObserver((entries) => {
+			const entry = entries[0]
+			if (!entry || !blockRef.current) return
+			const { width, height } = entry.contentRect
+			setContainerDimensions({ width, height })
+			const editorElem = document.getElementById("editor-elem")
+			const nextElem = document.getElementById("__next")
+			if (nextElem) {
+				nextElem.style.backgroundColor = "white"
+				nextElem.style.borderRadius = "3px"
+			}
+			// if (editorElem) {
+			// 	editorElem.style.width = `${width}px`
+			// }
+		})
+
+		observer.observe(containerRef.current)
+
+		return () => {
+			observer.disconnect()
+		}
+	}, [containerDimensions, blockRef, containerRef])
 	return (
-		<div className="bg-white" ref={containerRef} id="container-element">
-			<div className="mx-20 prose min-h-[400px] pb-14 pt-2" id="editor-elem" ref={blockRef}></div>
+		<div className="w-full rounded-[3px] bg-white" ref={containerRef} id="container-element">
+			<div
+				className="prose mx-auto max-h-[400px] min-h-[400px] !max-w-[100rem] overflow-y-auto rounded-[3px] px-4 pb-14   pt-2"
+				style={{ backgroundColor: "white" }}
+				id="editor-elem"
+				ref={blockRef}
+			></div>
 		</div>
 	)
 }
