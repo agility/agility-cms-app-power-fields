@@ -41,9 +41,13 @@ const FriendlyURLField = () => {
 	};
 	const hasBeenSaved = !!!(contentItem && contentItem?.contentID < 0);
 
+	const titleFieldName = contentItem?.values
+		? Object.keys(contentItem.values).find((k) => k.toLowerCase() === "title") ?? "Title"
+		: "Title";
+
 	const intializeTitleFieldListener = () => {
 		contentItemMethods.addFieldListener({
-			fieldName: "Title",
+			fieldName: titleFieldName,
 			onChange: (t) => {
 				setCurrentTitle(t);
 				contentItemMethods?.getContentItem()?.then((ci) => {
