@@ -1,9 +1,9 @@
 import { useAgilityAppSDK, contentItemMethods, setHeight, openAlertModal, setFocus } from "@agility/app-sdk";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormInputWithAddons, INestedInputButtonProps, UnifiedIconName } from "@agility/plenum-ui";
 import { FOCUS_EVENTS, handleFieldFocusEvent } from "@/methods/handleFieldFocusEvent";
 
-const makeFriendlyStr = (s: string): string => {
+const makeFriendlyStr = (s: string, stripTrailingDash = true): string => {
 	if (!s) return "";
 	let friendly = s.toLowerCase();
 	friendly = friendly
@@ -21,7 +21,7 @@ const makeFriendlyStr = (s: string): string => {
 		.replace(new RegExp("[^\\w\\-@-]", "g"), "-")
 		.replace(new RegExp("--+", "g"), "-");
 
-	if (friendly.lastIndexOf("-") > 0 && friendly.lastIndexOf("-") == friendly.length - 1) {
+	if (stripTrailingDash && friendly.lastIndexOf("-") > 0 && friendly.lastIndexOf("-") == friendly.length - 1) {
 		friendly = friendly.substring(0, friendly.length - 1);
 	}
 	return friendly;
@@ -38,6 +38,28 @@ const FriendlyURLField = () => {
 	const regenerateSlug = async (title: string) => {
 		const newVal = makeFriendlyStr(title);
 		contentItemMethods.setFieldValue({ name: field?.name, value: newVal });
+	};
+
+	// Manual input: while typing, keep a trailing "-" so the user can type "hello-world"
+	// left to right without the "-" being stripped on each keystroke. On paste, apply the
+	// full clean-up (including the trailing "-") immediately. Blur does a final clean-up.
+	const isPasting = useRef(false);
+	const handleManualInput = (value: string) => {
+		const stripTrailingDash = isPasting.current;
+		isPasting.current = false;
+		const newVal = makeFriendlyStr(value, stripTrailingDash);
+		contentItemMethods.setFieldValue({ name: field?.name, value: newVal });
+	};
+	const handlePaste = () => {
+		isPasting.current = true;
+		// reset in case the paste does not trigger a change event (e.g. identical content)
+		setTimeout(() => (isPasting.current = false), 0);
+	};
+	const handleManualBlur = (value: string) => {
+		const cleaned = makeFriendlyStr(value);
+		if (cleaned !== value) {
+			contentItemMethods.setFieldValue({ name: field?.name, value: cleaned });
+		}
 	};
 	const hasBeenSaved = !!!(contentItem && contentItem?.contentID < 0);
 
@@ -136,12 +158,14 @@ const FriendlyURLField = () => {
 					value={fieldValue}
 					name={field?.name || ""}
 					handleChange={(value: string) => {
-						regenerateSlug(value);
+						handleManualInput(value);
 					}}
+					onPaste={handlePaste}
 					onFocus={() => {
 						handleFieldFocusEvent({ eventName: FOCUS_EVENTS.FOCUS });
 					}}
-					onBlur={() => {
+					onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+						handleManualBlur(e.target.value);
 						handleFieldFocusEvent({ eventName: FOCUS_EVENTS.BLUR });
 					}}
 					addonBTN={formInputBTNProps}
